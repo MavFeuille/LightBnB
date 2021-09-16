@@ -7,7 +7,7 @@ const pool = new Pool({
   user: 'vagrant',
   password: '123',
   host: 'localhost',
-  database: 'bootcampx'
+  database: 'lightbnb'
 });
 
 pool.connect()
@@ -21,16 +21,30 @@ pool.connect()
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function(email) {
-  let user;
-  for (const userId in users) {
-    user = users[userId];
-    if (user.email.toLowerCase() === email.toLowerCase()) {
-      break;
-    } else {
-      user = null;
-    }
-  }
-  return Promise.resolve(user);
+  const queryString = `
+  SELECT * 
+  FROM users
+  WHERE email = $1;
+  `
+  return pool
+    .query(queryString, [email])
+    .then((result) => {
+      console.log("Result.rows: ", result.rows)
+      return result.rows[0];
+    })
+    .catch((err) => null);
+
+  //-------Original codes -------
+  // let user;
+  // for (const userId in users) {
+  //   user = users[userId];
+  //   if (user.email.toLowerCase() === email.toLowerCase()) {
+  //     break;
+  //   } else {
+  //     user = null;
+  //   }
+  // }
+  // return Promise.resolve(user);
 }
 exports.getUserWithEmail = getUserWithEmail;
 
@@ -83,6 +97,7 @@ const getAllProperties = function(options, limit = 10) {
   return pool
   .query(`SELECT * FROM properties LIMIT $1`, [limit])
   .then((result) => {
+    console.log("Result: ", result)
     return(result.rows);
   })
   .catch((err) => {
